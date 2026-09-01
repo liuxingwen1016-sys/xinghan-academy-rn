@@ -3,6 +3,7 @@ export type Lesson = {
   title: string;
   duration: string;
   type: 'video' | 'article';
+  videoSource?: number;
   content: string[];
 };
 

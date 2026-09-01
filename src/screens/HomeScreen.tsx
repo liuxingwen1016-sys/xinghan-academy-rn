@@ -14,21 +14,12 @@ type Props = {
   setTab: (tab: MainTab) => void;
 };
 
-const ringSegments = [
-  {left: 24, top: -2, transform: [{rotate: '0deg'}]},
-  {left: 43, top: 7, transform: [{rotate: '45deg'}]},
-  {left: 51, top: 27, transform: [{rotate: '90deg'}]},
-  {left: 43, top: 46, transform: [{rotate: '135deg'}]},
-  {left: 24, top: 54, transform: [{rotate: '0deg'}]},
-  {left: 5, top: 46, transform: [{rotate: '45deg'}]},
-  {left: -3, top: 27, transform: [{rotate: '90deg'}]},
-  {left: 5, top: 7, transform: [{rotate: '135deg'}]},
-] as const;
-
 export function HomeScreen({navigation, setTab}: Props) {
-  const {colors, getCourseProgress} = useApp();
+  const {colors, getCourseProgress, totalStudyMinutes, learningStreak} = useApp();
   const featured = courses[0];
   const progress = getCourseProgress(featured.id);
+  const activeSegments = Math.round((progress / 100) * 36);
+  const studiedCourseCount = courses.filter(course => getCourseProgress(course.id) > 0).length;
 
   return (
     <SafeAreaView style={[styles.safe, {backgroundColor: colors.primaryDark}]} edges={['top']}>
@@ -60,14 +51,23 @@ export function HomeScreen({navigation, setTab}: Props) {
             </Pressable>
           </View>
           <View style={styles.progressBody}>
-            <View style={[styles.ringTrack, {borderColor: colors.surfaceMuted}]}>
-              {ringSegments.slice(0, Math.max(1, Math.round(progress / 12.5))).map((position, index) => <View key={index} style={[styles.ringSegment, position, {backgroundColor: colors.primary}]} />)}
+            <View style={styles.ringTrack}>
+              {Array.from({length: 36}, (_, index) => {
+                const angle = index * 10;
+                const radians = ((angle - 90) * Math.PI) / 180;
+                return <View key={index} style={[styles.ringSegment, {
+                  left: 36 + Math.cos(radians) * 29 - 2,
+                  top: 36 + Math.sin(radians) * 29 - 5,
+                  transform: [{rotate: `${angle}deg`}],
+                  backgroundColor: index < activeSegments ? colors.primary : colors.surfaceMuted,
+                }]} />;
+              })}
               <Text style={[styles.percent, {color: colors.text}]}>{progress}%</Text>
             </View>
             <View style={styles.statsRow}>
-              <View style={styles.stat}><Text style={[styles.statLabel, {color: colors.textMuted}]}>已学课程</Text><Text style={[styles.statValue, {color: colors.text}]}>12 <Text style={styles.statUnit}>门</Text></Text></View>
-              <View style={styles.stat}><Text style={[styles.statLabel, {color: colors.textMuted}]}>已学时长</Text><Text style={[styles.statValue, {color: colors.text}]}>32.5 <Text style={styles.statUnit}>小时</Text></Text></View>
-              <View style={styles.stat}><Text style={[styles.statLabel, {color: colors.textMuted}]}>连续学习</Text><Text style={[styles.statValue, {color: colors.text}]}>7 <Text style={styles.statUnit}>天</Text></Text></View>
+              <View style={styles.stat}><Text style={[styles.statLabel, {color: colors.textMuted}]}>已学课程</Text><Text style={[styles.statValue, {color: colors.text}]}>{studiedCourseCount} <Text style={styles.statUnit}>门</Text></Text></View>
+              <View style={styles.stat}><Text style={[styles.statLabel, {color: colors.textMuted}]}>已学时长</Text><Text style={[styles.statValue, {color: colors.text}]}>{(totalStudyMinutes / 60).toFixed(1)} <Text style={styles.statUnit}>小时</Text></Text></View>
+              <View style={styles.stat}><Text style={[styles.statLabel, {color: colors.textMuted}]}>连续学习</Text><Text style={[styles.statValue, {color: colors.text}]}>{learningStreak} <Text style={styles.statUnit}>天</Text></Text></View>
             </View>
           </View>
         </View>
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
   detailLink: {flexDirection: 'row', alignItems: 'center'},
   detailText: {fontSize: 9},
   progressBody: {flexDirection: 'row', alignItems: 'center', marginTop: 9},
-  ringTrack: {width: 62, height: 62, borderRadius: 31, borderWidth: 7, alignItems: 'center', justifyContent: 'center'},
-  ringSegment: {position: 'absolute', width: 14, height: 6, borderRadius: 3},
+  ringTrack: {width: 72, height: 72, alignItems: 'center', justifyContent: 'center'},
+  ringSegment: {position: 'absolute', width: 4, height: 10, borderRadius: 2},
   percent: {fontWeight: '900', fontSize: 14},
   statsRow: {flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginLeft: 14},
   stat: {alignItems: 'flex-start'},

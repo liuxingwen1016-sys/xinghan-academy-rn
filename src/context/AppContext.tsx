@@ -9,12 +9,23 @@ type PersistedState = {
   completedLessonIds: string[];
   favorites: string[];
   quizScores: Record<string, number>;
+  studyMinutesByDate: Record<string, number>;
   darkMode: boolean;
+};
+
+export type StudyDay = {
+  date: string;
+  shortDate: string;
+  weekday: string;
+  minutes: number;
 };
 
 type AppContextValue = PersistedState & {
   hydrated: boolean;
   colors: AppColors;
+  recentStudyDays: StudyDay[];
+  totalStudyMinutes: number;
+  learningStreak: number;
   toggleFavorite: (courseId: string) => void;
   isFavorite: (courseId: string) => boolean;
   completeLesson: (lessonId: string) => void;
@@ -25,10 +36,26 @@ type AppContextValue = PersistedState & {
   resetProgress: () => void;
 };
 
+const localDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const dateBefore = (days: number) => {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() - days);
+  return date;
+};
+
+const initialStudyMinutes = [42, 75, 96, 68, 71, 54, 110].reduce<Record<string, number>>((result, minutes, index) => {
+  result[localDateKey(dateBefore(6 - index))] = minutes;
+  return result;
+}, {});
+
 const initialState: PersistedState = {
   completedLessonIds: ['rn-l1', 'rn-l2', 'rn-l3'],
   favorites: ['rn-101'],
   quizScores: {},
+  studyMinutesByDate: initialStudyMinutes,
   darkMode: false,
 };
 
@@ -42,7 +69,8 @@ export function AppProvider({children}: PropsWithChildren) {
     AsyncStorage.getItem(STORAGE_KEY)
       .then(value => {
         if (value) {
-          setState({...initialState, ...(JSON.parse(value) as PersistedState)});
+          const restored = JSON.parse(value) as Partial<PersistedState>;
+          setState({...initialState, ...restored, studyMinutesByDate: restored.studyMinutesByDate ?? initialState.studyMinutesByDate});
         }
       })
       .catch(() => undefined)
@@ -57,11 +85,28 @@ export function AppProvider({children}: PropsWithChildren) {
 
   const value = useMemo<AppContextValue>(() => {
     const update = (recipe: (current: PersistedState) => PersistedState) => setState(recipe);
+    const allLessons = courses.flatMap(course => getAllLessons(course));
+    const recentStudyDays = Array.from({length: 7}, (_, index) => {
+      const date = dateBefore(6 - index);
+      const dateKey = localDateKey(date);
+      return {
+        date: dateKey,
+        shortDate: `${date.getMonth() + 1}/${date.getDate()}`,
+        weekday: `周${'日一二三四五六'[date.getDay()]}`,
+        minutes: state.studyMinutesByDate[dateKey] ?? 0,
+      };
+    });
+    const totalStudyMinutes = Object.values(state.studyMinutesByDate).reduce((total, minutes) => total + minutes, 0);
+    let learningStreak = 0;
+    while ((state.studyMinutesByDate[localDateKey(dateBefore(learningStreak))] ?? 0) > 0) learningStreak += 1;
 
     return {
       ...state,
       hydrated,
       colors: state.darkMode ? darkColors : lightColors,
+      recentStudyDays,
+      totalStudyMinutes,
+      learningStreak,
       toggleFavorite: courseId =>
         update(current => ({
           ...current,
@@ -70,13 +115,21 @@ export function AppProvider({children}: PropsWithChildren) {
             : [...current.favorites, courseId],
         })),
       isFavorite: courseId => state.favorites.includes(courseId),
-      completeLesson: lessonId =>
-        update(current => ({
+      completeLesson: lessonId => update(current => {
+        if (current.completedLessonIds.includes(lessonId)) return current;
+        const lesson = allLessons.find(item => item.id === lessonId);
+        const [minutesText = '0', secondsText = '0'] = lesson?.duration.split(':') ?? [];
+        const lessonMinutes = Math.max(1, Math.round((Number(minutesText) * 60 + Number(secondsText)) / 60));
+        const today = localDateKey(new Date());
+        return {
           ...current,
-          completedLessonIds: current.completedLessonIds.includes(lessonId)
-            ? current.completedLessonIds
-            : [...current.completedLessonIds, lessonId],
-        })),
+          completedLessonIds: [...current.completedLessonIds, lessonId],
+          studyMinutesByDate: {
+            ...current.studyMinutesByDate,
+            [today]: (current.studyMinutesByDate[today] ?? 0) + lessonMinutes,
+          },
+        };
+      }),
       isLessonComplete: lessonId => state.completedLessonIds.includes(lessonId),
       getCourseProgress: courseId => {
         const course = courses.find(item => item.id === courseId);

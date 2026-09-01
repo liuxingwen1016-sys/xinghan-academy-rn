@@ -12,11 +12,12 @@ import {RootStackParamList} from '../types';
 import {AppIcon} from '../components/AppIcon';
 
 export function LearningHubScreen({navigation}: {navigation: NativeStackNavigationProp<RootStackParamList, 'Main'>}) {
-  const {colors, completedLessonIds, getCourseProgress, quizScores, isLessonComplete} = useApp();
+  const {colors, completedLessonIds, getCourseProgress, quizScores, isLessonComplete, recentStudyDays, totalStudyMinutes, learningStreak} = useApp();
   const course = courses[0];
   const lessons = getAllLessons(course);
   const progress = getCourseProgress(course.id);
   const nextLesson = lessons.find(lesson => !completedLessonIds.includes(lesson.id)) ?? lessons[lessons.length - 1];
+  const maxDailyMinutes = Math.max(1, ...recentStudyDays.map(day => day.minutes));
 
   return (
     <SafeAreaView style={[styles.safe, {backgroundColor: colors.background}]} edges={['top']}>
@@ -31,15 +32,15 @@ export function LearningHubScreen({navigation}: {navigation: NativeStackNavigati
           <View style={styles.summaryTop}>
             <View>
               <Text style={styles.summaryLabel}>累计学习</Text>
-              <Text style={styles.summaryValue}>32.5 <Text style={styles.summaryUnit}>小时</Text></Text>
+              <Text style={styles.summaryValue}>{(totalStudyMinutes / 60).toFixed(1)} <Text style={styles.summaryUnit}>小时</Text></Text>
             </View>
-            <View style={styles.streak}><AppIcon name="fire" size={15} color="#FFB233" /><Text style={styles.streakText}>连续学习 7 天</Text></View>
+            <View style={styles.streak}><AppIcon name="fire" size={15} color="#FFB233" /><Text style={styles.streakText}>连续学习 {learningStreak} 天</Text></View>
           </View>
           <View style={styles.weekBars}>
-            {[32, 55, 78, 46, 64, 36, 70].map((height, index) => (
-              <View key={index} style={styles.day}>
-                <View style={[styles.bar, {height, backgroundColor: index === 6 ? colors.warning : colors.accent}]} />
-                <Text style={styles.dayText}>{['一', '二', '三', '四', '五', '六', '日'][index]}</Text>
+            {recentStudyDays.map((day, index) => (
+              <View key={day.date} style={styles.day}>
+                <View style={[styles.bar, {height: Math.max(4, Math.round((day.minutes / maxDailyMinutes) * 70)), backgroundColor: index === 6 ? colors.warning : colors.accent}]} />
+                <Text style={styles.dayText}>{day.weekday.replace('周', '')}</Text>
               </View>
             ))}
           </View>

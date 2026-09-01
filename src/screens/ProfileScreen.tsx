@@ -16,13 +16,20 @@ const menu: {icon: React.ComponentProps<typeof AppIcon>['name']; label: string}[
 ];
 
 export function ProfileScreen({navigation}: {navigation: NativeStackNavigationProp<RootStackParamList, 'Main'>}) {
-  const {colors, darkMode, setDarkMode, favorites, resetProgress} = useApp();
+  const {colors, darkMode, setDarkMode, favorites, resetProgress, recentStudyDays, totalStudyMinutes, learningStreak} = useApp();
+  const recentTotalMinutes = recentStudyDays.reduce((total, day) => total + day.minutes, 0);
+  const maxDailyMinutes = Math.max(1, ...recentStudyDays.map(day => day.minutes));
+  const formatRangeDate = (date: string) => {
+    const [, month, day] = date.split('-').map(Number);
+    return `${month}月${day}日`;
+  };
+  const recentRange = `${formatRangeDate(recentStudyDays[0].date)} - ${formatRangeDate(recentStudyDays[6].date)}`;
 
   const handleMenu = (label: string) => {
     if (label === '我的收藏') {
       const names = courses.filter(course => favorites.includes(course.id)).map(course => course.title);
       Alert.alert('我的收藏', names.length ? names.join('\n') : '暂时没有收藏课程');
-    } else Alert.alert(label, label === '下载管理' ? '课程图文与题库已内置，视频下载将在后续版本接入。' : '该入口用于培训演示，可在后续版本接入真实服务。');
+    } else Alert.alert(label, label === '下载管理' ? '演示课程的视频、图文和题库均已内置，可离线使用。' : '该入口用于培训演示，可在后续版本接入真实服务。');
   };
 
   return (
@@ -30,25 +37,32 @@ export function ProfileScreen({navigation}: {navigation: NativeStackNavigationPr
       <StatusBar barStyle="light-content" backgroundColor={colors.primaryDark} translucent={false} />
       <ScrollView style={{backgroundColor: colors.primaryDark}} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.header, {backgroundColor: colors.primaryDark}]}>
-          <Pressable style={styles.settings}><AppIcon name="cog-outline" size={22} color="#FFFFFF" /></Pressable>
+          <Pressable style={styles.settings} onPress={() => Alert.alert('设置', '可在下方切换深色模式，或重置演示数据。')}><AppIcon name="cog-outline" size={22} color="#FFFFFF" /></Pressable>
           <View style={styles.profileRow}>
             <View style={styles.avatar}><AppIcon name="account" size={43} color="#123B70" /></View>
             <View style={styles.profileCopy}><Text style={styles.name}>学习者</Text><Text style={styles.userId}>ID: 10086</Text></View>
             <View style={[styles.level, {backgroundColor: colors.warning}]}><Text style={styles.levelText}>Lv.5</Text></View>
           </View>
           <View style={styles.stats}>
-            <View style={styles.stat}><Text style={styles.statValue}>12</Text><Text style={styles.statLabel}>我的课程</Text></View>
-            <View style={styles.stat}><Text style={styles.statValue}>32.5</Text><Text style={styles.statLabel}>学习时长(小时)</Text></View>
-            <View style={styles.stat}><Text style={styles.statValue}>7</Text><Text style={styles.statLabel}>连续学习(天)</Text></View>
+            <View style={styles.stat}><Text style={styles.statValue}>{courses.length}</Text><Text style={styles.statLabel}>我的课程</Text></View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}><Text style={styles.statValue}>{(totalStudyMinutes / 60).toFixed(1)}</Text><Text style={styles.statLabel}>学习时长(小时)</Text></View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}><Text style={styles.statValue}>{learningStreak}</Text><Text style={styles.statLabel}>连续学习(天)</Text></View>
           </View>
         </View>
 
         <View style={[styles.sheet, {backgroundColor: colors.background}]}>
           <View style={[styles.weekCard, {backgroundColor: colors.surface, borderColor: colors.border}]}>
-            <Text style={[styles.weekTitle, {color: colors.text}]}>本周学习时长</Text>
-            <View style={styles.weekMeta}><Text style={[styles.weekValue, {color: colors.text}]}>8.6<Text style={styles.weekUnit}> 小时</Text></Text><Text style={[styles.weekRise, {color: colors.success}]}>较上周 ↑ 12%</Text></View>
+            <View style={styles.weekTitleRow}><Text style={[styles.weekTitle, {color: colors.text}]}>最近 7 天学习时长</Text><Text style={[styles.weekRange, {color: colors.textMuted}]}>{recentRange}</Text></View>
+            <View style={styles.weekMeta}><Text style={[styles.weekValue, {color: colors.text}]}>{(recentTotalMinutes / 60).toFixed(1)}<Text style={styles.weekUnit}> 小时</Text></Text><Text style={[styles.weekHint, {color: colors.textMuted}]}>按实际完成课时累计</Text></View>
             <View style={styles.chart}>
-              {[22, 41, 62, 38, 36, 18, 43].map((height, index) => <View key={index} style={styles.day}><View style={[styles.bar, {height, backgroundColor: colors.primary}]} /><Text style={[styles.dayText, {color: colors.textMuted}]}>{['一', '二', '三', '四', '五', '六', '日'][index]}</Text></View>)}
+              {recentStudyDays.map(day => <View key={day.date} style={styles.day}>
+                <Text style={[styles.dayMinutes, {color: colors.textMuted}]}>{day.minutes}</Text>
+                <View style={[styles.bar, {height: Math.max(4, Math.round((day.minutes / maxDailyMinutes) * 48)), backgroundColor: colors.primary}]} />
+                <Text style={[styles.dayText, {color: colors.textMuted}]}>{day.weekday}</Text>
+                <Text style={[styles.dateText, {color: colors.textMuted}]}>{day.shortDate}</Text>
+              </View>)}
             </View>
           </View>
 
@@ -77,30 +91,35 @@ export function ProfileScreen({navigation}: {navigation: NativeStackNavigationPr
 const styles = StyleSheet.create({
   safe: {flex: 1},
   content: {paddingBottom: 0},
-  header: {paddingHorizontal: 14, paddingTop: 6, paddingBottom: 16},
+  header: {paddingHorizontal: 14, paddingTop: 8, paddingBottom: 18},
   settings: {position: 'absolute', right: 10, top: 6, width: 38, height: 38, alignItems: 'center', justifyContent: 'center', zIndex: 2},
-  profileRow: {height: 76, flexDirection: 'row', alignItems: 'center'},
-  avatar: {width: 54, height: 54, borderRadius: 27, backgroundColor: '#D8EEFF', borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center'},
+  profileRow: {height: 82, flexDirection: 'row', alignItems: 'center'},
+  avatar: {width: 58, height: 58, borderRadius: 29, backgroundColor: '#D8EEFF', borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center'},
   profileCopy: {flex: 1, marginLeft: 11},
   name: {color: '#FFFFFF', fontSize: 16, fontWeight: '900'},
   userId: {color: 'rgba(255,255,255,0.72)', fontSize: 9, marginTop: 4},
   level: {borderRadius: 5, paddingHorizontal: 7, paddingVertical: 4, marginRight: 40},
   levelText: {color: '#633A00', fontSize: 8, fontWeight: '900'},
-  stats: {height: 64, borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 9, flexDirection: 'row', alignItems: 'center'},
+  stats: {height: 66, borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.28)', borderRadius: 10, flexDirection: 'row', alignItems: 'center'},
   stat: {flex: 1, alignItems: 'center'},
+  statDivider: {width: StyleSheet.hairlineWidth, height: 28, backgroundColor: 'rgba(255,255,255,0.22)'},
   statValue: {color: '#FFFFFF', fontSize: 15, fontWeight: '900'},
   statLabel: {color: 'rgba(255,255,255,0.68)', fontSize: 7, marginTop: 4},
-  sheet: {borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 12},
-  weekCard: {borderWidth: StyleSheet.hairlineWidth, borderRadius: 11, padding: 12},
-  weekTitle: {fontSize: 11, fontWeight: '800'},
+  sheet: {borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 12, paddingTop: 14},
+  weekCard: {borderWidth: StyleSheet.hairlineWidth, borderRadius: 12, padding: 12},
+  weekTitleRow: {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'},
+  weekTitle: {fontSize: 12, fontWeight: '900'},
+  weekRange: {fontSize: 7},
   weekMeta: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 7},
   weekValue: {fontSize: 18, fontWeight: '900'},
   weekUnit: {fontSize: 8, fontWeight: '500'},
-  weekRise: {fontSize: 8},
-  chart: {height: 77, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', marginTop: 4},
-  day: {height: 71, width: 26, alignItems: 'center', justifyContent: 'flex-end'},
-  bar: {width: 7, borderRadius: 4},
+  weekHint: {fontSize: 7},
+  chart: {height: 101, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', marginTop: 3},
+  day: {height: 96, width: 36, alignItems: 'center', justifyContent: 'flex-end'},
+  dayMinutes: {fontSize: 6, marginBottom: 2},
+  bar: {width: 8, borderRadius: 4},
   dayText: {fontSize: 7, marginTop: 4},
+  dateText: {fontSize: 6, marginTop: 2},
   menuCard: {borderWidth: StyleSheet.hairlineWidth, borderRadius: 10, marginTop: 10, overflow: 'hidden'},
   menuRow: {height: 47, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12},
   menuLabel: {flex: 1, fontSize: 10, marginLeft: 10},

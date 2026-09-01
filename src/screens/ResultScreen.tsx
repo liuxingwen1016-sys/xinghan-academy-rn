@@ -4,13 +4,15 @@ import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {AppButton} from '../components/AppButton';
 import {useApp} from '../context/AppContext';
-import {getCourse, rnQuiz} from '../data/courses';
+import {getCourse} from '../data/courses';
+import {getCourseQuiz} from '../data/quizzes';
 import {RootStackParamList} from '../types';
 
 export function ResultScreen({navigation, route}: NativeStackScreenProps<RootStackParamList, 'Result'>) {
   const {colors} = useApp();
   const {score, total, courseId} = route.params;
   const course = getCourse(courseId);
+  const quiz = getCourseQuiz(courseId);
   const ratio = score / total;
   const passed = ratio >= 0.6;
 
@@ -34,7 +36,7 @@ export function ResultScreen({navigation, route}: NativeStackScreenProps<RootSta
         </View>
 
         <Text style={[styles.reviewTitle, {color: colors.text}]}>知识点解析</Text>
-        {rnQuiz.map((item, index) => (
+        {quiz.map((item, index) => (
           <View key={item.id} style={[styles.review, {backgroundColor: colors.surface, borderColor: colors.border}]}>
             <View style={[styles.index, {backgroundColor: colors.surfaceMuted}]}><Text style={[styles.indexText, {color: colors.primary}]}>{index + 1}</Text></View>
             <View style={styles.reviewCopy}>

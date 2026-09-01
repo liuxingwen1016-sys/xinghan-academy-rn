@@ -1,17 +1,15 @@
-import {Course, QuizQuestion} from '../types';
+import {Course} from '../types';
 
-const compactLessons = (prefix: string, titles: string[]) =>
-  titles.map((title, index) => ({
-    id: `${prefix}-${index + 1}`,
-    title,
-    duration: `${8 + index * 3}:00`,
-    type: (index === 0 ? 'video' : 'article') as 'video' | 'article',
-    content: [
-      `本节围绕“${title}”展开，通过一个可以运行的示例理解核心概念。`,
-      '先观察页面效果，再拆解组件结构、状态流转和关键代码，最后完成一个小练习。',
-      '演示过程中可以断网继续阅读图文内容；视频仅作为在线补充资源。',
-    ],
-  }));
+const lessonVideos = {
+  rnPositioning: require('../../assets/videos/rn-positioning.mp4'),
+  rnComponents: require('../../assets/videos/rn-components.mp4'),
+  rnNavigation: require('../../assets/videos/rn-navigation.mp4'),
+  typescriptTypes: require('../../assets/videos/typescript-types.mp4'),
+  javascriptClosures: require('../../assets/videos/javascript-closures.mp4'),
+  nodeHttp: require('../../assets/videos/node-http.mp4'),
+  flutterWidgets: require('../../assets/videos/flutter-widgets.mp4'),
+  aiRequirements: require('../../assets/videos/ai-requirements.mp4'),
+};
 
 export const courses: Course[] = [
   {
@@ -46,6 +44,7 @@ export const courses: Course[] = [
             title: '1.1 RN 的定位与开发模式',
             duration: '12:30',
             type: 'video',
+            videoSource: lessonVideos.rnPositioning,
             content: [
               'React Native 使用 React 描述界面，并将核心组件映射为 Android、iOS 平台能力。',
               '在本课程中，我们使用 TypeScript 编写页面，通过组件、属性和状态组织业务，再由 Android 工程生成可安装 APK。',
@@ -85,6 +84,7 @@ export const courses: Course[] = [
             title: '2.1 核心组件与交互',
             duration: '14:36',
             type: 'video',
+            videoSource: lessonVideos.rnComponents,
             content: [
               'View 用于组织布局，Text 显示文字，Pressable 响应触摸，TextInput 处理输入，FlatList 渲染长列表。',
               '真实项目中应当同时处理加载、空数据、错误和正常内容四种状态。',
@@ -124,6 +124,7 @@ export const courses: Course[] = [
             title: '3.1 导航与跨页面状态',
             duration: '17:20',
             type: 'video',
+            videoSource: lessonVideos.rnNavigation,
             content: [
               '导航负责页面切换和参数传递，全局状态负责用户、学习进度和主题等跨页面信息。',
               '不要把所有状态都放进全局容器，输入框内容、展开收起等局部状态应保留在组件内部。',
@@ -171,7 +172,46 @@ export const courses: Course[] = [
     accent: '#6EC6FF',
     tags: ['TypeScript', '类型安全'],
     goals: ['理解基础类型与类型收窄', '掌握接口、泛型和工具类型', '建立可维护的工程配置'],
-    chapters: [{id: 'ts-c1', title: '核心类型系统', lessons: compactLessons('ts', ['类型与接口', '联合类型与收窄', '泛型与工具类型'])}],
+    chapters: [{
+      id: 'ts-c1',
+      title: '核心类型系统',
+      lessons: [
+        {
+          id: 'ts-1',
+          title: '1.1 类型与接口',
+          duration: '08:00',
+          type: 'video',
+          videoSource: lessonVideos.typescriptTypes,
+          content: [
+            'TypeScript 使用 string、number、boolean 等类型描述数据，让许多错误在运行前被发现。',
+            'interface 适合定义对象契约，例如 Course 必须包含 id、title 和 lessons，并能通过 extends 组合能力。',
+            '类型只参与编译检查，不会改变 JavaScript 运行方式，因此外部接口数据仍需要运行时校验。',
+          ],
+        },
+        {
+          id: 'ts-2',
+          title: '1.2 联合类型与类型收窄',
+          duration: '11:00',
+          type: 'article',
+          content: [
+            '联合类型用竖线表示多种可能，例如 loading | success | error 可以准确描述页面状态。',
+            'typeof、in、instanceof 和自定义类型守卫能够把宽泛类型收窄为当前分支中的确定类型。',
+            '推荐使用可辨识联合代替多个互相冲突的布尔值，让不合法状态无法被构造。',
+          ],
+        },
+        {
+          id: 'ts-3',
+          title: '1.3 泛型与工具类型',
+          duration: '14:00',
+          type: 'article',
+          content: [
+            '泛型在保留类型信息的同时复用逻辑，例如 ApiResult<T> 可以承载不同业务对象。',
+            'Pick、Omit、Partial 和 Record 等工具类型适合从现有模型派生表单、更新参数和索引结构。',
+            '泛型约束应体现真实业务边界，避免使用 any 跳过检查或设计过度复杂的类型体操。',
+          ],
+        },
+      ],
+    }],
   },
   {
     id: 'js-201',
@@ -188,7 +228,46 @@ export const courses: Course[] = [
     accent: '#FFE082',
     tags: ['JavaScript', '异步编程'],
     goals: ['理解执行上下文和闭包', '掌握 Promise 与异步流程', '能够组织模块化代码'],
-    chapters: [{id: 'js-c1', title: '语言核心', lessons: compactLessons('js', ['作用域与闭包', 'Promise 与事件循环', '模块化与工程实践'])}],
+    chapters: [{
+      id: 'js-c1',
+      title: '语言核心',
+      lessons: [
+        {
+          id: 'js-1',
+          title: '1.1 作用域与闭包',
+          duration: '08:00',
+          type: 'video',
+          videoSource: lessonVideos.javascriptClosures,
+          content: [
+            'JavaScript 使用词法作用域：函数能访问哪些变量，由函数定义的位置而不是调用的位置决定。',
+            '闭包让内部函数在外部函数执行结束后，仍能访问创建时的变量环境。',
+            '闭包常用于事件回调、缓存与工厂函数；长期存活的监听器应及时清理，避免无意保留大对象。',
+          ],
+        },
+        {
+          id: 'js-2',
+          title: '1.2 Promise 与事件循环',
+          duration: '11:00',
+          type: 'article',
+          content: [
+            '同步代码先进入调用栈，Promise 回调进入微任务队列，定时器等任务进入宏任务队列。',
+            '每轮宏任务结束后，运行时会清空当前微任务队列，所以 Promise.then 通常早于 setTimeout 执行。',
+            'async/await 是 Promise 的语法封装，仍需要通过 try/catch 处理失败，并避免无意串行等待。',
+          ],
+        },
+        {
+          id: 'js-3',
+          title: '1.3 模块化与工程实践',
+          duration: '14:00',
+          type: 'article',
+          content: [
+            'ES Module 使用 import 与 export 建立显式依赖，便于静态分析、按需打包和代码拆分。',
+            '模块应围绕单一职责组织，对外暴露稳定的小接口，不把内部状态和实现细节全部导出。',
+            '工程中还需统一格式、静态检查和测试脚本，让多人协作下的行为保持可预测。',
+          ],
+        },
+      ],
+    }],
   },
   {
     id: 'node-201',
@@ -205,7 +284,46 @@ export const courses: Course[] = [
     accent: '#69D38A',
     tags: ['Node.js', 'REST API'],
     goals: ['设计 REST API', '理解中间件机制', '完成课程服务接口'],
-    chapters: [{id: 'node-c1', title: '服务端基础', lessons: compactLessons('node', ['创建 HTTP 服务', '路由与中间件', '课程接口设计'])}],
+    chapters: [{
+      id: 'node-c1',
+      title: '服务端基础',
+      lessons: [
+        {
+          id: 'node-1',
+          title: '1.1 创建 HTTP 服务',
+          duration: '08:00',
+          type: 'video',
+          videoSource: lessonVideos.nodeHttp,
+          content: [
+            'Node.js 的 http.createServer 接收请求回调，request 描述方法、路径和请求头，response 负责输出。',
+            '接口需要设置正确的状态码和 Content-Type，并在结束前写入合法的 JSON 数据。',
+            '从 GET /health 开始验证服务，再逐步增加课程列表和详情接口，便于隔离问题。',
+          ],
+        },
+        {
+          id: 'node-2',
+          title: '1.2 路由与中间件',
+          duration: '11:00',
+          type: 'article',
+          content: [
+            '路由依据请求方法和路径分发业务，例如 GET /courses 与 POST /progress 承担不同职责。',
+            '中间件按顺序处理日志、鉴权、参数解析和异常，并通过 next 把控制权传递给下一环节。',
+            '全局错误处理中间件应记录内部错误，同时向客户端返回稳定且不泄露敏感信息的错误结构。',
+          ],
+        },
+        {
+          id: 'node-3',
+          title: '1.3 课程接口设计',
+          duration: '14:00',
+          type: 'article',
+          content: [
+            '课程列表只返回卡片所需摘要，课程详情再返回章节和课时，减少首屏传输量。',
+            '更新学习进度时使用用户、课程和课时标识，并保证重复提交不会重复累计。',
+            '分页、筛选、错误码和版本策略需要在接口契约中明确，并配套自动化测试。',
+          ],
+        },
+      ],
+    }],
   },
   {
     id: 'flutter-101',
@@ -222,7 +340,46 @@ export const courses: Course[] = [
     accent: '#62D5E4',
     tags: ['Flutter', '跨平台'],
     goals: ['理解 Widget 树', '认识 Flutter 渲染方式', '能够进行技术选型比较'],
-    chapters: [{id: 'flutter-c1', title: 'Flutter 概览', lessons: compactLessons('flutter', ['Dart 与 Widget', '布局和状态', 'Flutter 与 RN 对比'])}],
+    chapters: [{
+      id: 'flutter-c1',
+      title: 'Flutter 概览',
+      lessons: [
+        {
+          id: 'flutter-1',
+          title: '1.1 Dart 与 Widget',
+          duration: '08:00',
+          type: 'video',
+          videoSource: lessonVideos.flutterWidgets,
+          content: [
+            'Flutter 使用 Dart 编写应用，文本、布局、手势和主题都通过 Widget 组合成配置树。',
+            'Widget 本身不可变；状态变化后重新执行 build，框架更新真正需要变化的渲染对象。',
+            'StatelessWidget 适合只依赖输入的界面，StatefulWidget 用于管理会随交互变化的局部状态。',
+          ],
+        },
+        {
+          id: 'flutter-2',
+          title: '1.2 布局与状态',
+          duration: '11:00',
+          type: 'article',
+          content: [
+            'Flutter 布局遵循“约束向下、尺寸向上、位置由父级决定”的规则。',
+            'Row、Column 和 Flex 处理线性布局，Expanded 分配剩余空间，ListView 负责可滚动列表。',
+            '局部状态可使用 setState；跨页面共享状态时再选择 Provider、Riverpod 或 Bloc 等方案。',
+          ],
+        },
+        {
+          id: 'flutter-3',
+          title: '1.3 Flutter 与 RN 对比',
+          duration: '14:00',
+          type: 'article',
+          content: [
+            'Flutter 主要通过自有渲染引擎绘制界面，RN 的核心组件则映射为平台原生视图。',
+            'Flutter 在跨平台视觉一致性上更直接；RN 对 React/TypeScript 团队和原生生态复用更友好。',
+            '技术选型还要比较团队能力、现有资产、平台能力、包体和长期维护成本，而非只看单项性能。',
+          ],
+        },
+      ],
+    }],
   },
   {
     id: 'ai-101',
@@ -239,50 +396,49 @@ export const courses: Course[] = [
     accent: '#B696FF',
     tags: ['AI Coding', '工程效率'],
     goals: ['编写清晰的开发任务', '建立验证闭环', '控制 AI 生成代码风险'],
-    chapters: [{id: 'ai-c1', title: 'AI 辅助开发', lessons: compactLessons('ai', ['从需求到任务', '生成与验证', '代码评审与交付'])}],
-  },
-];
-
-export const rnQuiz: QuizQuestion[] = [
-  {
-    id: 'q1',
-    prompt: '在 React Native 中，适合渲染较长课程列表的核心组件是？',
-    options: ['ScrollView', 'FlatList', 'TextInput', 'Pressable'],
-    answer: 1,
-    explanation: 'FlatList 具备窗口化渲染能力，适合较长或动态的数据列表。',
-  },
-  {
-    id: 'q2',
-    prompt: '本 Demo 在网络不可用时，仍然可以完成哪项操作？',
-    options: ['播放所有在线视频', '读取本地图文并完成测验', '下载云端课程', '同步远端账号'],
-    answer: 1,
-    explanation: '课程目录、图文、题库和进度均保存在本地，视频是在线补充资源。',
-  },
-  {
-    id: 'q3',
-    prompt: '跨页面共享学习进度时，更合理的做法是？',
-    options: ['复制到每个页面', '存入全局状态并持久化', '写死在样式文件', '只保存在按钮组件中'],
-    answer: 1,
-    explanation: '学习进度属于跨页面业务状态，应统一管理，并在重启后恢复。',
-  },
-  {
-    id: 'q4',
-    prompt: '使用 TypeScript 定义路由参数的直接收益是？',
-    options: ['减小图片体积', '提高屏幕亮度', '在开发阶段发现参数错误', '自动生成视频'],
-    answer: 2,
-    explanation: '类型定义可以约束页面名称和参数结构，减少运行时错误。',
-  },
-  {
-    id: 'q5',
-    prompt: '课程应用 APK 包体增长最快的资源通常是？',
-    options: ['JSON 题库', '主题颜色', '视频文件', 'TypeScript 类型'],
-    answer: 2,
-    explanation: '视频码率远高于文本和图片，因此推荐在线视频配合本地兜底内容。',
+    chapters: [{
+      id: 'ai-c1',
+      title: 'AI 辅助开发',
+      lessons: [
+        {
+          id: 'ai-1',
+          title: '1.1 从需求到任务',
+          duration: '08:00',
+          type: 'video',
+          videoSource: lessonVideos.aiRequirements,
+          content: [
+            '高质量任务先说明目标用户、需要解决的问题，以及完成后能观察到的结果。',
+            '继续补齐技术栈、不可修改范围、交互细节和可执行的验收条件，减少错误假设。',
+            '把大需求拆成可独立验证的小步骤，每一步都有明确输入、产出和检查方式。',
+          ],
+        },
+        {
+          id: 'ai-2',
+          title: '1.2 生成与验证',
+          duration: '11:00',
+          type: 'article',
+          content: [
+            '让 AI 先读取真实代码和约束，再生成最小变更，可以降低与现有架构冲突的概率。',
+            '生成代码不是完成，仍要执行类型检查、单元测试、构建和关键交互回归。',
+            '发现偏差时提供具体证据，例如错误日志、截图和预期结果，让下一轮修正有明确方向。',
+          ],
+        },
+        {
+          id: 'ai-3',
+          title: '1.3 代码评审与交付',
+          duration: '14:00',
+          type: 'article',
+          content: [
+            '评审重点关注正确性、边界条件、数据安全、可维护性以及是否引入无关变更。',
+            '涉及依赖、网络、权限和敏感数据的修改需要单独核查，不能只依赖界面看起来正常。',
+            '交付时记录变更范围、验证结果和剩余风险，并通过清晰提交保留可追溯性。',
+          ],
+        },
+      ],
+    }],
   },
 ];
 
 export const getCourse = (courseId: string) => courses.find(course => course.id === courseId) ?? courses[0];
 
 export const getAllLessons = (course: Course) => course.chapters.flatMap(chapter => chapter.lessons);
-
-export const onlineDemoVideoUrl = 'https://media.w3.org/2010/05/sintel/trailer.mp4';

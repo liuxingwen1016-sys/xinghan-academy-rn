@@ -74,6 +74,10 @@ dist/
 # TypeScript
 *.tsbuildinfo
 
+# Local media generation tools and temporary frames
+.video-tools/
+.video-build/
+
 
 # iOS
 ios/Podfile.lock

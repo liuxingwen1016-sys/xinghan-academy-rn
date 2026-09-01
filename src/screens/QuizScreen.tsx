@@ -7,7 +7,7 @@ import {AppIcon} from '../components/AppIcon';
 import {ProgressBar} from '../components/ProgressBar';
 import {TopBar} from '../components/TopBar';
 import {useApp} from '../context/AppContext';
-import {rnQuiz} from '../data/courses';
+import {getCourseQuiz} from '../data/quizzes';
 import {RootStackParamList} from '../types';
 
 const optionLabels = ['A', 'B', 'C', 'D'];
@@ -17,9 +17,10 @@ export function QuizScreen({navigation, route}: NativeStackScreenProps<RootStack
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [error, setError] = useState(false);
-  const question = rnQuiz[index];
+  const quiz = getCourseQuiz(route.params.courseId);
+  const question = quiz[index];
   const selected = answers[question.id];
-  const isLast = index === rnQuiz.length - 1;
+  const isLast = index === quiz.length - 1;
 
   const next = () => {
     if (selected === undefined) {
@@ -28,9 +29,9 @@ export function QuizScreen({navigation, route}: NativeStackScreenProps<RootStack
     }
     setError(false);
     if (isLast) {
-      const score = rnQuiz.reduce((total, item) => total + (answers[item.id] === item.answer ? 1 : 0), 0);
+      const score = quiz.reduce((total, item) => total + (answers[item.id] === item.answer ? 1 : 0), 0);
       saveQuizScore(route.params.courseId, score);
-      navigation.replace('Result', {courseId: route.params.courseId, score, total: rnQuiz.length});
+      navigation.replace('Result', {courseId: route.params.courseId, score, total: quiz.length});
     } else setIndex(current => current + 1);
   };
 
@@ -39,8 +40,8 @@ export function QuizScreen({navigation, route}: NativeStackScreenProps<RootStack
       <StatusBar barStyle="dark-content" backgroundColor={colors.surface} translucent={false} />
       <TopBar title="课程测验" onBack={navigation.goBack} />
       <View style={[styles.content, {backgroundColor: colors.surface}]}>
-        <Text style={[styles.progressCount, {color: colors.text}]}>{index + 1} / {rnQuiz.length}</Text>
-        <ProgressBar value={((index + 1) / rnQuiz.length) * 100} height={5} />
+        <Text style={[styles.progressCount, {color: colors.text}]}>{index + 1} / {quiz.length}</Text>
+        <ProgressBar value={((index + 1) / quiz.length) * 100} height={5} />
         <View style={[styles.typeBadge, {backgroundColor: `${colors.primary}12`}]}><Text style={[styles.typeText, {color: colors.primary}]}>单选题</Text></View>
         <Text style={[styles.question, {color: colors.text}]}>{question.prompt}</Text>
         <View style={styles.options}>

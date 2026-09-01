@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-community/netinfo';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {ActivityIndicator, Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, TextInput, View} from 'react-native';
@@ -7,11 +6,10 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import Video, {VideoRef} from 'react-native-video';
 import {AppButton} from '../components/AppButton';
 import {AppIcon} from '../components/AppIcon';
-import {NetworkBanner} from '../components/NetworkBanner';
 import {ProgressBar} from '../components/ProgressBar';
 import {TopBar} from '../components/TopBar';
 import {useApp} from '../context/AppContext';
-import {getAllLessons, getCourse, onlineDemoVideoUrl} from '../data/courses';
+import {getAllLessons, getCourse} from '../data/courses';
 import {RootStackParamList} from '../types';
 
 export function LessonScreen({navigation, route}: NativeStackScreenProps<RootStackParamList, 'Lesson'>) {
@@ -21,13 +19,15 @@ export function LessonScreen({navigation, route}: NativeStackScreenProps<RootSta
   const currentIndex = Math.max(0, lessons.findIndex(item => item.id === route.params.lessonId));
   const lesson = lessons[currentIndex] ?? lessons[0];
   const nextLesson = lessons[currentIndex + 1];
-  const [online, setOnline] = useState<boolean | null>(null);
+  const currentChapter = course.chapters.find(chapter => chapter.lessons.some(item => item.id === lesson.id));
+  const localVideoSource = lesson.videoSource as unknown as React.ComponentProps<typeof Video>['source'];
   const [tab, setTab] = useState<'catalog' | 'notes'>('catalog');
   const [note, setNote] = useState('');
   const [saved, setSaved] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
   const [videoPosition, setVideoPosition] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
@@ -35,17 +35,21 @@ export function LessonScreen({navigation, route}: NativeStackScreenProps<RootSta
   const noteKey = useMemo(() => `@xinghan-academy/note/${lesson.id}`, [lesson.id]);
 
   useEffect(() => {
-    setOnline(null);
     setPlaying(false);
     setVideoLoading(false);
     setVideoError(false);
     setVideoPosition(0);
     setVideoDuration(0);
-    NetInfo.fetch().then(state => setOnline(Boolean(state.isConnected && state.isInternetReachable !== false))).catch(() => setOnline(false));
+    setVideoEnded(false);
     AsyncStorage.getItem(noteKey).then(value => setNote(value ?? '')).catch(() => setNote(''));
   }, [noteKey]);
 
   const startVideo = () => {
+    if (videoEnded) {
+      videoRef.current?.seek(0);
+      setVideoPosition(0);
+      setVideoEnded(false);
+    }
     setVideoError(false);
     setVideoLoading(true);
     setPlaying(true);
@@ -78,14 +82,13 @@ export function LessonScreen({navigation, route}: NativeStackScreenProps<RootSta
   return (
     <SafeAreaView style={[styles.safe, {backgroundColor: colors.surface}]} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.surface} translucent={false} />
-      <TopBar title="学习" onBack={navigation.goBack} actionIcon="download-outline" secondaryActionIcon="dots-vertical" onAction={() => Alert.alert('下载课程', '本地图文资源已内置，视频将在接入下载服务后支持离线。')} onSecondaryAction={() => Alert.alert('课时信息', `第 ${currentIndex + 1} / ${lessons.length} 课时`)} />
-      <NetworkBanner online={online} />
+      <TopBar title="学习" onBack={navigation.goBack} actionIcon="download-outline" secondaryActionIcon="dots-vertical" onAction={() => Alert.alert('离线课程', '本课的视频、图文摘要和测验均已内置，可直接离线观看。')} onSecondaryAction={() => Alert.alert('课时信息', `第 ${currentIndex + 1} / ${lessons.length} 课时`)} />
       <ScrollView style={[styles.scroll, {backgroundColor: colors.background}]} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {lesson.type === 'video' ? <View style={styles.video} testID="lesson-video">
-          {online ? <Video
+          <Video
             key={videoKey}
             ref={videoRef}
-            source={{uri: onlineDemoVideoUrl}}
+            source={localVideoSource}
             style={StyleSheet.absoluteFill}
             resizeMode="contain"
             paused={!playing}
@@ -104,18 +107,18 @@ export function LessonScreen({navigation, route}: NativeStackScreenProps<RootSta
               setVideoLoading(false);
             }}
             onProgress={({currentTime}) => setVideoPosition(currentTime)}
-            onBuffer={({isBuffering}) => setVideoLoading(isBuffering)}
             onEnd={() => {
+              completeLesson(lesson.id);
               setPlaying(false);
-              setVideoPosition(0);
-              videoRef.current?.seek(0);
+              setVideoEnded(true);
+              setVideoPosition(videoDuration);
             }}
             onError={() => {
               setPlaying(false);
               setVideoLoading(false);
               setVideoError(true);
             }}
-          /> : null}
+          />
 
           {!playing && !videoError ? <View style={styles.videoPoster} pointerEvents="none">
             <View style={styles.editorTop}><View style={styles.editorDot} /><View style={[styles.editorDot, {backgroundColor: '#F8C14F'}]} /><View style={[styles.editorDot, {backgroundColor: '#47C778'}]} /></View>
@@ -123,18 +126,16 @@ export function LessonScreen({navigation, route}: NativeStackScreenProps<RootSta
               <View style={styles.codePane}>{[82, 58, 73, 45, 66, 52].map((width, index) => <View key={index} style={[styles.codeLine, {width: `${width}%`, backgroundColor: index % 2 ? '#16A7C5' : '#3178D8'}]} />)}</View>
               <View style={styles.phone}><View style={styles.phoneNotch} /><View style={styles.phoneCard} /><View style={styles.phoneCard} /><View style={[styles.phoneButton, {backgroundColor: colors.primary}]} /></View>
             </View>
-            <View style={styles.controls}><AppIcon name="play" size={15} color="#FFFFFF" /><View style={styles.videoTrack}><View style={[styles.videoFill, {backgroundColor: colors.primary}]} /><View style={styles.videoThumb} /></View><Text style={styles.videoTime}>00:00 / {videoDuration ? formatVideoTime(videoDuration) : '14:36'}</Text><AppIcon name="fullscreen" size={16} color="#FFFFFF" /></View>
+            <View style={styles.controls}><AppIcon name={videoEnded ? 'replay' : 'play'} size={15} color="#FFFFFF" /><View style={styles.videoTrack}><View style={[styles.videoFill, {backgroundColor: colors.primary, width: videoEnded ? '100%' : '0%'}]} />{videoEnded ? <View style={[styles.videoThumb, {left: '98%'}]} /> : null}</View><Text style={styles.videoTime}>{videoEnded && videoDuration ? formatVideoTime(videoDuration) : '00:00'} / {videoDuration ? formatVideoTime(videoDuration) : lesson.duration}</Text><AppIcon name="fullscreen" size={16} color="#FFFFFF" /></View>
           </View> : null}
 
-          {online === null ? <View style={styles.videoMessage}><ActivityIndicator color="#FFFFFF" size="large" /><Text style={styles.videoMessageText}>正在检查网络…</Text></View> : null}
-          {online === false ? <View style={styles.videoMessage}><AppIcon name="wifi-off" size={34} color="#FFFFFF" /><Text style={styles.videoMessageTitle}>视频需要网络连接</Text><Text style={styles.videoMessageText}>联网后重新进入本课即可直接播放</Text></View> : null}
-          {online && !playing && !videoError ? <Pressable accessibilityRole="button" accessibilityLabel="播放课程视频" style={styles.playButton} onPress={startVideo}><AppIcon name="play" size={26} color="#FFFFFF" /></Pressable> : null}
-          {online && playing && videoLoading ? <View style={styles.buffering} pointerEvents="none"><ActivityIndicator color="#FFFFFF" size="large" /><Text style={styles.videoMessageText}>视频加载中…</Text></View> : null}
-          {online && videoError ? <View style={styles.videoMessage}><AppIcon name="alert-circle-outline" size={32} color="#FFFFFF" /><Text style={styles.videoMessageTitle}>视频加载失败</Text><Pressable accessibilityRole="button" accessibilityLabel="重试播放课程视频" onPress={retryVideo} style={[styles.retryButton, {backgroundColor: colors.primary}]}><AppIcon name="reload" size={15} color="#FFFFFF" /><Text style={styles.retryText}>重新播放</Text></Pressable></View> : null}
+          {!playing && !videoError ? <Pressable accessibilityRole="button" accessibilityLabel={videoEnded ? '重新播放课程视频' : '播放课程视频'} style={styles.playButton} onPress={startVideo}><AppIcon name={videoEnded ? 'replay' : 'play'} size={26} color="#FFFFFF" /></Pressable> : null}
+          {playing && videoLoading ? <View style={styles.buffering} pointerEvents="none"><ActivityIndicator color="#FFFFFF" size="large" /><Text style={styles.videoMessageText}>视频加载中…</Text></View> : null}
+          {videoError ? <View style={styles.videoMessage}><AppIcon name="alert-circle-outline" size={32} color="#FFFFFF" /><Text style={styles.videoMessageTitle}>视频加载失败</Text><Pressable accessibilityRole="button" accessibilityLabel="重试播放课程视频" onPress={retryVideo} style={[styles.retryButton, {backgroundColor: colors.primary}]}><AppIcon name="reload" size={15} color="#FFFFFF" /><Text style={styles.retryText}>重新播放</Text></Pressable></View> : null}
         </View> : <View style={[styles.articleHero, {backgroundColor: course.color}]}><AppIcon name="file-document-outline" size={44} color={course.accent} /><Text style={styles.articleLabel}>离线图文课时</Text></View>}
 
         <View style={[styles.heading, {backgroundColor: colors.surface}]}>
-          <Text style={[styles.chapter, {color: colors.text}]}>第 {Math.floor(currentIndex / 3) + 1} 章　组件与布局基础</Text>
+          <Text style={[styles.chapter, {color: colors.text}]}>{currentChapter?.title ?? course.title}</Text>
           <Text style={[styles.title, {color: colors.text}]}>{lesson.title}</Text>
           <View style={styles.metaRow}><Text style={[styles.meta, {color: colors.textMuted}]}>{lesson.type === 'video' ? `播放 ${formatVideoTime(videoPosition)} / ${videoDuration ? formatVideoTime(videoDuration) : lesson.duration}` : `本地图文 · ${lesson.duration}`}</Text><Text style={[styles.done, {color: isLessonComplete(lesson.id) ? colors.success : colors.textMuted}]}>{isLessonComplete(lesson.id) ? '已完成' : '未完成'}</Text></View>
           <View style={styles.courseProgress}><Text style={[styles.courseProgressText, {color: colors.textMuted}]}>课程进度</Text><Text style={[styles.courseProgressText, {color: colors.primary}]}>{getCourseProgress(course.id)}%</Text></View>
