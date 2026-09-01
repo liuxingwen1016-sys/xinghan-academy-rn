@@ -1,0 +1,288 @@
+import {Course, QuizQuestion} from '../types';
+
+const compactLessons = (prefix: string, titles: string[]) =>
+  titles.map((title, index) => ({
+    id: `${prefix}-${index + 1}`,
+    title,
+    duration: `${8 + index * 3}:00`,
+    type: (index === 0 ? 'video' : 'article') as 'video' | 'article',
+    content: [
+      `本节围绕“${title}”展开，通过一个可以运行的示例理解核心概念。`,
+      '先观察页面效果，再拆解组件结构、状态流转和关键代码，最后完成一个小练习。',
+      '演示过程中可以断网继续阅读图文内容；视频仅作为在线补充资源。',
+    ],
+  }));
+
+export const courses: Course[] = [
+  {
+    id: 'rn-101',
+    title: 'React Native 实战入门',
+    shortTitle: 'RN',
+    category: '移动开发',
+    level: '入门',
+    duration: '6.5 小时',
+    learners: '8.9k',
+    rating: 4.9,
+    description:
+      '从 React 基础到 Android 应用打包，循序渐进完成一款课程学习应用，掌握 RN 项目的核心开发链路。',
+    instructor: '张老师',
+    color: '#073B83',
+    accent: '#00C7E5',
+    tags: ['React', 'TypeScript', 'Android'],
+    featured: true,
+    goals: [
+      '掌握 React Native 基础语法与核心组件',
+      '理解导航、状态管理和本地持久化',
+      '能够调用 Android 平台能力并完成打包',
+      '独立完成一款结构清晰的移动应用',
+    ],
+    chapters: [
+      {
+        id: 'rn-c1',
+        title: '第 1 章：认识 React Native',
+        lessons: [
+          {
+            id: 'rn-l1',
+            title: '1.1 RN 的定位与开发模式',
+            duration: '12:30',
+            type: 'video',
+            content: [
+              'React Native 使用 React 描述界面，并将核心组件映射为 Android、iOS 平台能力。',
+              '在本课程中，我们使用 TypeScript 编写页面，通过组件、属性和状态组织业务，再由 Android 工程生成可安装 APK。',
+              '建议先跑通一个最小页面，再逐步加入导航、列表、持久化和原生能力。这样每一步都可以单独验证。',
+            ],
+          },
+          {
+            id: 'rn-l2',
+            title: '1.2 项目结构与调试工具',
+            duration: '14:10',
+            type: 'article',
+            content: [
+              '项目通常由 Android 原生工程、JavaScript/TypeScript 业务代码、静态资源和构建配置组成。',
+              '开发阶段使用 Fast Refresh 快速查看修改，发布阶段由 Gradle 打包 JavaScript Bundle、资源和原生库。',
+              '调试时优先确认三件事：Metro 是否启动、设备是否连接、应用是否运行在正确构建类型。',
+            ],
+          },
+          {
+            id: 'rn-l3',
+            title: '1.3 第一个 TypeScript 页面',
+            duration: '16:20',
+            type: 'article',
+            content: [
+              '函数组件负责根据属性和状态返回界面。TypeScript 可以为属性、路由参数和业务对象建立明确契约。',
+              '页面拆分的基本原则是：有独立职责、可复用或有独立状态的区域，应当提取为组件。',
+              '练习：创建一个包含标题、进度条和按钮的课程卡片，并通过属性传入不同课程数据。',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'rn-c2',
+        title: '第 2 章：组件与布局基础',
+        lessons: [
+          {
+            id: 'rn-l4',
+            title: '2.1 核心组件与交互',
+            duration: '14:36',
+            type: 'video',
+            content: [
+              'View 用于组织布局，Text 显示文字，Pressable 响应触摸，TextInput 处理输入，FlatList 渲染长列表。',
+              '真实项目中应当同时处理加载、空数据、错误和正常内容四种状态。',
+              '可访问性标签和足够大的触摸区域，也是移动端组件设计的一部分。',
+            ],
+          },
+          {
+            id: 'rn-l5',
+            title: '2.2 Flexbox 响应式布局',
+            duration: '18:45',
+            type: 'article',
+            content: [
+              'RN 默认使用 Flexbox。主轴方向、对齐方式、伸缩比例和间距共同决定组件位置。',
+              '避免通过大量固定坐标堆叠界面，优先使用弹性宽度、最大宽度和安全区域适配不同设备。',
+              '练习：让课程统计卡片在不同屏幕宽度下保持均匀分布。',
+            ],
+          },
+          {
+            id: 'rn-l6',
+            title: '2.3 列表、刷新与搜索',
+            duration: '21:30',
+            type: 'article',
+            content: [
+              'FlatList 只渲染当前窗口附近的元素，适合课程、消息和学习记录等数据集合。',
+              '搜索输入可以配合本地筛选或接口请求；频繁请求时应增加防抖，避免重复计算。',
+              '列表项使用稳定 key，渲染函数保持轻量，有助于减少不必要的更新。',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'rn-c3',
+        title: '第 3 章：应用能力与交付',
+        lessons: [
+          {
+            id: 'rn-l7',
+            title: '3.1 导航与跨页面状态',
+            duration: '17:20',
+            type: 'video',
+            content: [
+              '导航负责页面切换和参数传递，全局状态负责用户、学习进度和主题等跨页面信息。',
+              '不要把所有状态都放进全局容器，输入框内容、展开收起等局部状态应保留在组件内部。',
+              '路由参数只传递必要标识，再从统一数据源读取对象，可以降低页面耦合。',
+            ],
+          },
+          {
+            id: 'rn-l8',
+            title: '3.2 本地存储与离线兜底',
+            duration: '19:15',
+            type: 'article',
+            content: [
+              '本 Demo 将课程目录、图文正文和题库打包在本地，学习进度写入 AsyncStorage。',
+              '视频在线加载失败时，用户仍能阅读课程正文、完成测验并保存学习结果。',
+              '涉及令牌和密码时不能使用普通键值存储，应改用 Android 安全存储能力。',
+            ],
+          },
+          {
+            id: 'rn-l9',
+            title: '3.3 Android 构建与发布',
+            duration: '22:40',
+            type: 'article',
+            content: [
+              '发布构建会打包业务 Bundle、图片、原生库和 Android 资源。视频文件通常是包体增长的主要来源。',
+              '内部演示可以生成签名 APK 直接安装；上架时应使用正式密钥，并优先考虑 AAB 和架构拆分。',
+              '交付前至少完成类型检查、单元测试、Release 构建和一台真机的主流程回归。',
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ts-101',
+    title: 'TypeScript 从入门到精通',
+    shortTitle: 'TS',
+    category: '前端开发',
+    level: '中级',
+    duration: '5.2 小时',
+    learners: '12.3k',
+    rating: 4.8,
+    description: '掌握类型系统、泛型与工程配置，为大型前端和 RN 项目建立可靠边界。',
+    instructor: '李老师',
+    color: '#1757A6',
+    accent: '#6EC6FF',
+    tags: ['TypeScript', '类型安全'],
+    goals: ['理解基础类型与类型收窄', '掌握接口、泛型和工具类型', '建立可维护的工程配置'],
+    chapters: [{id: 'ts-c1', title: '核心类型系统', lessons: compactLessons('ts', ['类型与接口', '联合类型与收窄', '泛型与工具类型'])}],
+  },
+  {
+    id: 'js-201',
+    title: 'JavaScript 核心进阶',
+    shortTitle: 'JS',
+    category: '前端开发',
+    level: '进阶',
+    duration: '4.1 小时',
+    learners: '15.7k',
+    rating: 4.7,
+    description: '深入理解闭包、异步任务和模块化，提升复杂业务代码的可预测性。',
+    instructor: '王老师',
+    color: '#F4B400',
+    accent: '#FFE082',
+    tags: ['JavaScript', '异步编程'],
+    goals: ['理解执行上下文和闭包', '掌握 Promise 与异步流程', '能够组织模块化代码'],
+    chapters: [{id: 'js-c1', title: '语言核心', lessons: compactLessons('js', ['作用域与闭包', 'Promise 与事件循环', '模块化与工程实践'])}],
+  },
+  {
+    id: 'node-201',
+    title: 'Node.js 后端开发实战',
+    shortTitle: 'Node',
+    category: '后端开发',
+    level: '中级',
+    duration: '7.3 小时',
+    learners: '9.1k',
+    rating: 4.8,
+    description: '从 API 设计到数据持久化，搭建可供移动应用调用的轻量服务。',
+    instructor: '周老师',
+    color: '#155B36',
+    accent: '#69D38A',
+    tags: ['Node.js', 'REST API'],
+    goals: ['设计 REST API', '理解中间件机制', '完成课程服务接口'],
+    chapters: [{id: 'node-c1', title: '服务端基础', lessons: compactLessons('node', ['创建 HTTP 服务', '路由与中间件', '课程接口设计'])}],
+  },
+  {
+    id: 'flutter-101',
+    title: 'Flutter 跨平台开发概览',
+    shortTitle: 'FL',
+    category: '移动开发',
+    level: '入门',
+    duration: '3.6 小时',
+    learners: '7.4k',
+    rating: 4.6,
+    description: '认识 Flutter 的 Widget、渲染机制以及它与 RN 的主要技术差异。',
+    instructor: '赵老师',
+    color: '#087E8B',
+    accent: '#62D5E4',
+    tags: ['Flutter', '跨平台'],
+    goals: ['理解 Widget 树', '认识 Flutter 渲染方式', '能够进行技术选型比较'],
+    chapters: [{id: 'flutter-c1', title: 'Flutter 概览', lessons: compactLessons('flutter', ['Dart 与 Widget', '布局和状态', 'Flutter 与 RN 对比'])}],
+  },
+  {
+    id: 'ai-101',
+    title: 'AI Coding 高效研发',
+    shortTitle: 'AI',
+    category: 'AI / 效率',
+    level: '入门',
+    duration: '2.8 小时',
+    learners: '18.6k',
+    rating: 4.9,
+    description: '把需求拆解、代码生成、测试和评审串成可复用的 AI 辅助研发流程。',
+    instructor: '陈老师',
+    color: '#6136B4',
+    accent: '#B696FF',
+    tags: ['AI Coding', '工程效率'],
+    goals: ['编写清晰的开发任务', '建立验证闭环', '控制 AI 生成代码风险'],
+    chapters: [{id: 'ai-c1', title: 'AI 辅助开发', lessons: compactLessons('ai', ['从需求到任务', '生成与验证', '代码评审与交付'])}],
+  },
+];
+
+export const rnQuiz: QuizQuestion[] = [
+  {
+    id: 'q1',
+    prompt: '在 React Native 中，适合渲染较长课程列表的核心组件是？',
+    options: ['ScrollView', 'FlatList', 'TextInput', 'Pressable'],
+    answer: 1,
+    explanation: 'FlatList 具备窗口化渲染能力，适合较长或动态的数据列表。',
+  },
+  {
+    id: 'q2',
+    prompt: '本 Demo 在网络不可用时，仍然可以完成哪项操作？',
+    options: ['播放所有在线视频', '读取本地图文并完成测验', '下载云端课程', '同步远端账号'],
+    answer: 1,
+    explanation: '课程目录、图文、题库和进度均保存在本地，视频是在线补充资源。',
+  },
+  {
+    id: 'q3',
+    prompt: '跨页面共享学习进度时，更合理的做法是？',
+    options: ['复制到每个页面', '存入全局状态并持久化', '写死在样式文件', '只保存在按钮组件中'],
+    answer: 1,
+    explanation: '学习进度属于跨页面业务状态，应统一管理，并在重启后恢复。',
+  },
+  {
+    id: 'q4',
+    prompt: '使用 TypeScript 定义路由参数的直接收益是？',
+    options: ['减小图片体积', '提高屏幕亮度', '在开发阶段发现参数错误', '自动生成视频'],
+    answer: 2,
+    explanation: '类型定义可以约束页面名称和参数结构，减少运行时错误。',
+  },
+  {
+    id: 'q5',
+    prompt: '课程应用 APK 包体增长最快的资源通常是？',
+    options: ['JSON 题库', '主题颜色', '视频文件', 'TypeScript 类型'],
+    answer: 2,
+    explanation: '视频码率远高于文本和图片，因此推荐在线视频配合本地兜底内容。',
+  },
+];
+
+export const getCourse = (courseId: string) => courses.find(course => course.id === courseId) ?? courses[0];
+
+export const getAllLessons = (course: Course) => course.chapters.flatMap(chapter => chapter.lessons);
+
+export const onlineDemoVideoUrl = 'https://media.w3.org/2010/05/sintel/trailer.mp4';

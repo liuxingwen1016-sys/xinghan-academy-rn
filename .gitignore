@@ -1,0 +1,86 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# OSX
+#
+.DS_Store
+
+# Xcode
+#
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+ios/.xcode.env.local
+
+# Android/IntelliJ
+#
+build/
+.idea
+.gradle
+.gradle-user-home/
+.gradle-local-repo/
+.android-user/
+_legacy-android-expo49/
+local.properties
+*.iml
+*.hprof
+.cxx/
+*.keystore
+
+# node.js
+#
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# fastlane
+#
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Bundle artifact
+*.jsbundle
+
+# Ruby / CocoaPods
+/ios/Pods/
+/vendor/bundle/
+
+# Temporary files created by Metro to check the health of the file watcher
+.metro-health-check*
+
+# testing
+/coverage
+
+# Expo
+.expo/
+web-build/
+dist/
+
+# TypeScript
+*.tsbuildinfo
+
+
+# iOS
+ios/Podfile.lock
+ios/Podfile
+ios/Podfile.properties.json
+
+# React Native
+android/app/build/outputs
+android/app/build/generated
+android/app/build/reports

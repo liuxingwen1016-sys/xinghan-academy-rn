@@ -1,0 +1,44 @@
+buildscript {
+    ext {
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 35
+        targetSdkVersion = 34
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.0.21"
+        // The demo streams progressive MP4 only. Keep unused adaptive streaming
+        // and advertising modules out of the APK to reduce the package size.
+        useExoplayerIMA = false
+        useExoplayerRtsp = false
+        useExoplayerSmoothStreaming = false
+        useExoplayerDash = false
+        useExoplayerHls = false
+        if (project.hasProperty("academyNdkPath")) {
+            ndkPath = project.property("academyNdkPath")
+        }
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"
+
+allprojects {
+    repositories {
+        // Prefer the small player cache on the training network, while allowing
+        // every artifact/version not present there to fall back to standard repos.
+        def academyPlayerLocal = maven {
+            name = "academyPlayerLocal"
+            url = uri("$rootDir/.gradle-local-repo")
+        }
+        remove academyPlayerLocal
+        addFirst academyPlayerLocal
+    }
+}
