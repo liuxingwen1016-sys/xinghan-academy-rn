@@ -46,6 +46,8 @@ export type RootStackParamList = {
   Lesson: {courseId: string; lessonId?: string};
   Quiz: {courseId: string};
   Result: {courseId: string; score: number; total: number};
+  Favorites: undefined;
+  StudyHistory: undefined;
   Lab: undefined;
 };
 

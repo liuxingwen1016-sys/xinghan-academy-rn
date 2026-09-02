@@ -10,6 +10,7 @@ type PersistedState = {
   favorites: string[];
   quizScores: Record<string, number>;
   studyMinutesByDate: Record<string, number>;
+  lastLessonByCourse: Record<string, string>;
   darkMode: boolean;
 };
 
@@ -32,6 +33,7 @@ type AppContextValue = PersistedState & {
   isLessonComplete: (lessonId: string) => boolean;
   getCourseProgress: (courseId: string) => number;
   saveQuizScore: (courseId: string, score: number) => void;
+  recordLessonVisit: (courseId: string, lessonId: string) => void;
   setDarkMode: (enabled: boolean) => void;
   resetProgress: () => void;
 };
@@ -54,8 +56,9 @@ const initialStudyMinutes = [42, 75, 96, 68, 71, 54, 110].reduce<Record<string, 
 const initialState: PersistedState = {
   completedLessonIds: ['rn-l1', 'rn-l2', 'rn-l3'],
   favorites: ['rn-101'],
-  quizScores: {},
+  quizScores: {'rn-101': 4},
   studyMinutesByDate: initialStudyMinutes,
+  lastLessonByCourse: {'rn-101': 'rn-l4'},
   darkMode: false,
 };
 
@@ -140,6 +143,11 @@ export function AppProvider({children}: PropsWithChildren) {
       },
       saveQuizScore: (courseId, score) =>
         update(current => ({...current, quizScores: {...current.quizScores, [courseId]: score}})),
+      recordLessonVisit: (courseId, lessonId) =>
+        update(current => current.lastLessonByCourse[courseId] === lessonId ? current : ({
+          ...current,
+          lastLessonByCourse: {...current.lastLessonByCourse, [courseId]: lessonId},
+        })),
       setDarkMode: enabled => update(current => ({...current, darkMode: enabled})),
       resetProgress: () => update(current => ({...initialState, darkMode: current.darkMode})),
     };

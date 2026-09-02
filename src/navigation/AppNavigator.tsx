@@ -1,5 +1,5 @@
 import React from 'react';
-import {ActivityIndicator, StyleSheet, Text, View} from 'react-native';
+import {ActivityIndicator, Image, StyleSheet, Text, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useApp} from '../context/AppContext';
 import {RootStackParamList} from '../types';
@@ -9,6 +9,8 @@ import {LessonScreen} from '../screens/LessonScreen';
 import {MainShell} from '../screens/MainShell';
 import {QuizScreen} from '../screens/QuizScreen';
 import {ResultScreen} from '../screens/ResultScreen';
+import {FavoritesScreen} from '../screens/FavoritesScreen';
+import {StudyHistoryScreen} from '../screens/StudyHistoryScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -18,9 +20,9 @@ export function AppNavigator() {
   if (!hydrated) {
     return (
       <View style={[styles.loading, {backgroundColor: colors.primaryDark}]}>
-        <View style={[styles.logo, {borderColor: colors.accent}]}><Text style={styles.logoText}>星</Text></View>
-        <Text style={styles.title}>星瀚学堂</Text>
-        <Text style={styles.subtitle}>React Native 培训学习平台</Text>
+        <Image source={require('../../assets/rn-academy-icon-v2.png')} style={styles.logo} />
+        <Text style={styles.title}>RN学堂</Text>
+        <Text style={styles.subtitle}>React Native 课程训练平台</Text>
         <ActivityIndicator color={colors.accent} style={styles.indicator} />
       </View>
     );
@@ -33,6 +35,8 @@ export function AppNavigator() {
       <Stack.Screen name="Lesson" component={LessonScreen} />
       <Stack.Screen name="Quiz" component={QuizScreen} />
       <Stack.Screen name="Result" component={ResultScreen} options={{gestureEnabled: false}} />
+      <Stack.Screen name="Favorites" component={FavoritesScreen} />
+      <Stack.Screen name="StudyHistory" component={StudyHistoryScreen} />
       <Stack.Screen name="Lab" component={LabScreen} />
     </Stack.Navigator>
   );
@@ -40,8 +44,7 @@ export function AppNavigator() {
 
 const styles = StyleSheet.create({
   loading: {flex: 1, alignItems: 'center', justifyContent: 'center'},
-  logo: {width: 92, height: 92, borderWidth: 4, borderRadius: 28, alignItems: 'center', justifyContent: 'center'},
-  logoText: {color: '#FFFFFF', fontSize: 40, fontWeight: '900'},
+  logo: {width: 104, height: 104, borderRadius: 28},
   title: {color: '#FFFFFF', fontSize: 25, fontWeight: '900', marginTop: 18},
   subtitle: {color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 6},
   indicator: {marginTop: 22},

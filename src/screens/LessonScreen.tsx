@@ -13,7 +13,7 @@ import {getAllLessons, getCourse} from '../data/courses';
 import {RootStackParamList} from '../types';
 
 export function LessonScreen({navigation, route}: NativeStackScreenProps<RootStackParamList, 'Lesson'>) {
-  const {colors, completeLesson, isLessonComplete, getCourseProgress} = useApp();
+  const {colors, completeLesson, isLessonComplete, getCourseProgress, recordLessonVisit} = useApp();
   const course = getCourse(route.params.courseId);
   const lessons = getAllLessons(course);
   const currentIndex = Math.max(0, lessons.findIndex(item => item.id === route.params.lessonId));
@@ -41,6 +41,7 @@ export function LessonScreen({navigation, route}: NativeStackScreenProps<RootSta
     setVideoPosition(0);
     setVideoDuration(0);
     setVideoEnded(false);
+    recordLessonVisit(course.id, lesson.id);
     AsyncStorage.getItem(noteKey).then(value => setNote(value ?? '')).catch(() => setNote(''));
   }, [noteKey]);
 

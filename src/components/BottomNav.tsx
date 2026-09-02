@@ -21,7 +21,7 @@ export function BottomNav({active, onChange}: {active: MainTab; onChange: (tab: 
         return (
           <Pressable key={tab.id} onPress={() => onChange(tab.id)} style={styles.item} accessibilityRole="tab">
             <View style={[styles.iconWrap, selected && {backgroundColor: colors.surfaceMuted}]}>
-              <AppIcon name={selected ? tab.activeIcon : tab.icon} size={22} color={selected ? colors.primary : colors.textMuted} />
+              <AppIcon name={selected ? tab.activeIcon : tab.icon} size={28} color={selected ? colors.primary : colors.textMuted} />
             </View>
             <Text style={[styles.label, {color: selected ? colors.primary : colors.textMuted}]}>{tab.label}</Text>
           </Pressable>
@@ -32,8 +32,8 @@ export function BottomNav({active, onChange}: {active: MainTab; onChange: (tab: 
 }
 
 const styles = StyleSheet.create({
-  nav: {height: 60, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', paddingTop: 4},
-  item: {flex: 1, alignItems: 'center', justifyContent: 'center', gap: 1},
-  iconWrap: {width: 34, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center'},
-  label: {fontSize: 10, lineHeight: 14, fontWeight: '600'},
+  nav: {height: 70, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', paddingTop: 4},
+  item: {flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2},
+  iconWrap: {width: 44, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center'},
+  label: {fontSize: 12, lineHeight: 16, fontWeight: '800'},
 });

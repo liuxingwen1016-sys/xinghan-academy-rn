@@ -1,4 +1,4 @@
-# 星瀚学堂 Android Demo
+# RN学堂 Android Demo
 
 用于课程培训现场演示的 React Native Android 应用。
 
@@ -34,7 +34,7 @@ npm run build:android
 
 已验证的 Demo APK 另存于：
 
-`../build-artifacts/xinghan-academy/xinghan-academy-v1.0.0-course-fix-release.apk`
+`../build-artifacts/xinghan-academy/rn-academy-v1.1.0-release.apk`
 
 当前 APK 使用 Android 调试证书签名，仅用于本地安装和培训演示；正式发布前需要替换为生产签名。
 

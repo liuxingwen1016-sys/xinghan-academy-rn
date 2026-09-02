@@ -145,7 +145,7 @@ def create_frame(meta: dict[str, object], index: int, title: str, body: str, tar
     for marker in range(3):
         fill = accent if marker <= index - 1 else "#29445F"
         rounded(draw, (86 + marker * 44, 443, 118 + marker * 44, 451), 4, fill)
-    draw.text((736, 429), "星瀚学堂 · 本地课程资源", font=font(15), fill="#7691AE")
+    draw.text((736, 429), "RN 学堂 · 本地课程资源", font=font(15), fill="#7691AE")
     image.save(target, quality=94)
 
 

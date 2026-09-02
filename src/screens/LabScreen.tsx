@@ -76,7 +76,7 @@ export function LabScreen({navigation}: NativeStackScreenProps<RootStackParamLis
           <View style={styles.deviceRow}><Text style={[styles.deviceLabel, {color: colors.textMuted}]}>网络</Text><Text style={[styles.deviceValue, {color: colors.text}]}>{network}</Text></View>
         </View>
 
-        <AppButton label="调用系统分享" onPress={() => Share.share({message: '我正在使用星瀚学堂学习 React Native！'})} style={styles.share} />
+        <AppButton label="调用系统分享" onPress={() => Share.share({message: '我正在使用 RN学堂学习 React Native！'})} style={styles.share} />
       </View>
     </SafeAreaView>
   );
